@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-terminal-selection;
+  }
+
+  body {
+    @apply bg-terminal-bg text-terminal-fg font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  html, body, #root {
+    @apply h-full w-full overflow-hidden;
+  }
+}
+
+@layer components {
+  .terminal-font {
+    @apply font-mono text-terminal;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-terminal-bg disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+  }
+
+  .btn-secondary {
+    @apply btn bg-terminal-black text-terminal-fg hover:bg-terminal-brightBlack active:bg-terminal-brightBlack border border-terminal-selection;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-terminal-fg hover:bg-terminal-selection active:bg-terminal-brightBlack;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-terminal-black border border-terminal-selection rounded-lg text-terminal-fg placeholder-terminal-brightBlack focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  }
+
+  .sidebar {
+    @apply bg-terminal-black border-r border-terminal-selection flex flex-col;
+  }
+
+  .panel {
+    @apply bg-terminal-bg border-t border-terminal-selection;
+  }
+
+  .tab {
+    @apply px-4 py-2 text-sm font-medium text-terminal-brightBlack hover:text-terminal-fg hover:bg-terminal-selection transition-colors cursor-pointer;
+  }
+
+  .tab-active {
+    @apply tab text-primary-400 border-b-2 border-primary-500;
+  }
+
+  .dropdown {
+    @apply absolute right-0 top-full mt-1 min-w-[180px] bg-terminal-black border border-terminal-selection rounded-lg shadow-lg py-1 z-50;
+  }
+
+  .dropdown-item {
+    @apply w-full px-4 py-2 text-left text-sm text-terminal-fg hover:bg-terminal-selection transition-colors cursor-pointer;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.terminal.brightBlack') theme('colors.terminal.black');
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-terminal-black;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-terminal-brightBlack rounded-full hover:bg-terminal-white/50;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-corner {
+    @apply bg-terminal-black;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.2s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.15s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.15s ease-out;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.xterm {
+  @apply terminal-font;
+}
+
+.xterm .xterm-viewport {
+  @apply bg-terminal-bg;
+}
+
+.xterm .xterm-screen {
+  @apply bg-terminal-bg;
+}
+
+.xterm .xterm-cursor {
+  @apply bg-terminal-cursor;
+}
+
+.xterm .xterm-selection {
+  @apply bg-terminal-selection;
+}
