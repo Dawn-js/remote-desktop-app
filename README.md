@@ -1,6 +1,6 @@
-# Remote Desktop SSH Client
+# 远程桌面 SSH 客户端
 
-A modern, cross-platform SSH client built with Electron, React, TypeScript, and Tailwind CSS. Manage local and remote Linux systems from a beautiful, tabbed interface with built-in file transfer support.
+一款基于 Electron、React、TypeScript 和 Tailwind CSS 构建的现代化跨平台 SSH 客户端。通过美观的标签页界面管理本地及远程 Linux 系统，并内置文件传输功能。
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
@@ -8,77 +8,77 @@ A modern, cross-platform SSH client built with Electron, React, TypeScript, and 
 
 ---
 
-## Features
+## 功能特性
 
-### Core Functionality
-- **Multi-server management**: Organize local and cloud Linux servers in groups
-- **Tabbed terminal interface**: Multiple SSH and local terminal sessions in one window
-- **Built-in terminal emulator**: Powered by xterm.js with full 256-color support
-- **SFTP file transfer**: Dual-pane file browser with drag-and-drop upload/download
-- **Session persistence**: Reconnect on app restart, keep terminal scrollback
-- **Split pane support**: Horizontal/vertical terminal splits within a tab
+### 核心功能
+- **多服务器管理**：将本地与云端 Linux 服务器按组分类管理
+- **标签页式终端界面**：在单个窗口中同时管理多个 SSH 会话和本地终端
+- **内置终端模拟器**：基于 xterm.js，支持完整的 256 色显示
+- **SFTP 文件传输**：双面板文件浏览器，支持拖拽上传/下载
+- **会话持久化**：应用重启后自动恢复会话，保留终端回滚历史
+- **分屏支持**：在标签页内进行水平/垂直终端分屏
 
-### User Experience
-- **Beautiful dark theme**: Inspired by Termius and WindTerm
-- **Connection status indicators**: Green LEDs show connected/disconnected state
-- **Keyboard shortcuts**: Ctrl+T new tab, Ctrl+W close tab, Ctrl+N new connection
-- **Credential management**: Secure password and SSH key storage via system keychain
-- **Auto-reconnect**: Keep-alive support for unreliable connections
+### 用户体验
+- **精美深色主题**：灵感来自 Termius 和 WindTerm
+- **连接状态指示灯**：绿色 LED 实时显示连接/断开状态
+- **键盘快捷键**：Ctrl+T 新建标签，Ctrl+W 关闭标签，Ctrl+N 新建连接
+- **凭据管理**：通过系统密钥链安全存储密码和 SSH 密钥
+- **自动重连**：支持保活机制，应对不稳定网络
 
-### Technical
-- **Electron + React + TypeScript**: Modern desktop app stack
-- **Tailwind CSS**: Utility-first styling with custom terminal color scheme
-- **Zustand**: Lightweight state management
-- **ssh2**: Full SSH protocol support (password, key, agent auth)
-- **node-pty**: Native pseudo-terminal for local shells
-- **xterm.js**: Industry-standard terminal emulator
-
----
-
-## Screenshots
-
-> Coming soon - the app is under active development
+### 技术栈
+- **Electron + React + TypeScript**：现代桌面应用开发栈
+- **Tailwind CSS**：实用优先的样式框架，搭配定制终端配色方案
+- **Zustand**：轻量级状态管理库
+- **ssh2**：完整 SSH 协议支持（密码、密钥、代理认证）
+- **node-pty**：原生伪终端，用于本地 Shell
+- **xterm.js**：业界标准的终端模拟器
 
 ---
 
-## Quick Start
+## 截图展示
 
-### Prerequisites
+> 即将推出 —— 应用正积极开发中
+
+---
+
+## 快速开始
+
+### 环境要求
 - Node.js 18+
-- npm or yarn
-- Python 3.11+ (for node-pty native build)
+- npm 或 yarn
+- Python 3.11+（用于 node-pty 原生模块编译）
 
-### Development
+### 开发模式
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/Dawn-js/remote-desktop-app.git
 cd remote-desktop-app
 
-# Install dependencies
+# 安装依赖
 npm install
 
-# Start development server
+# 启动开发服务器
 npm run dev
 ```
 
-This will start:
-- Vite dev server on `http://localhost:5173`
-- Electron main process with hot reload
+执行后将会启动：
+- Vite 开发服务器，地址为 `http://localhost:5173`
+- Electron 主进程，支持热重载
 
-### Build
+### 构建打包
 
 ```bash
-# Build for production
+# 生产环境构建
 npm run build
 
-# Package for current platform
+# 打包当前平台应用
 npm run package
 ```
 
-Output will be in `dist-electron/`.
+输出目录为 `dist-electron/`。
 
-### Run Tests
+### 运行测试
 
 ```bash
 npm run typecheck
@@ -87,20 +87,20 @@ npm run lint
 
 ---
 
-## Project Structure
+## 项目结构
 
 ```
 remote-desktop-app/
 ├── src/
-│   ├── main/                    # Electron main process
-│   │   ├── index.ts            # App entry point, window creation
-│   │   ├── preload.ts          # Context bridge, IPC exposure
-│   │   ├── ssh-manager.ts      # SSH session management (ssh2)
-│   │   ├── terminal-manager.ts # Local terminal management (node-pty)
-│   │   └── config-manager.ts   # Config + credential storage (keytar)
-│   ├── renderer/               # React frontend
+│   ├── main/                    # Electron 主进程
+│   │   ├── index.ts            # 应用入口，窗口创建
+│   │   ├── preload.ts          # 上下文桥接，IPC 暴露
+│   │   ├── ssh-manager.ts      # SSH 会话管理（ssh2）
+│   │   ├── terminal-manager.ts # 本地终端管理（node-pty）
+│   │   └── config-manager.ts   # 配置与凭据存储（keytar）
+│   ├── renderer/               # React 前端
 │   │   ├── src/
-│   │   │   ├── App.tsx         # Main layout, sidebar, tabs
+│   │   │   ├── App.tsx         # 主布局、侧边栏、标签页
 │   │   │   ├── components/
 │   │   │   │   ├── Sidebar.tsx
 │   │   │   │   ├── TabBar.tsx
@@ -110,9 +110,9 @@ remote-desktop-app/
 │   │   │   │   └── useAppStore.ts
 │   │   │   ├── hooks/
 │   │   │   │   └── useKeyboardShortcuts.ts
-│   │   │   └── index.css       # Tailwind + terminal theme
+│   │   │   └── index.css       # Tailwind + 终端主题
 │   │   └── index.html
-│   └── shared/                 # Types shared between main/renderer
+│   └── shared/                 # 主/渲染进程共享类型
 │       └── types.ts
 ├── package.json
 ├── tsconfig.json
@@ -123,64 +123,64 @@ remote-desktop-app/
 
 ---
 
-## Configuration
+## 配置说明
 
-### Server Groups
-Servers are organized into groups: `Local`, `Cloud`, `Production`, `Development`. You can customize these in the app settings.
+### 服务器分组
+服务器按组分类：`本地`、`云端`、`生产`、`开发`。你可以在应用设置中自定义这些分组。
 
-### Theme
-The app uses a custom dark terminal theme with VS Code-inspired colors:
-- Background: `#1e1e1e`
-- Foreground: `#d4d4d4`
-- Selection: `#264f78`
+### 主题
+应用使用深色终端主题，配色灵感来自 VS Code：
+- 背景色：`#1e1e1e`
+- 前景色：`#d4d4d4`
+- 选中高亮：`#264f78`
 
-Font: Fira Code, JetBrains Mono, or system monospace fallback.
-
----
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+T` | New local terminal tab |
-| `Ctrl+W` | Close active tab |
-| `Ctrl+N` | New SSH connection |
+字体：Fira Code、JetBrains Mono 或系统等宽字体后备。
 
 ---
 
-## Roadmap
+## 键盘快捷键
 
-- [x] Project scaffold with Electron + React + TypeScript
-- [x] Dark theme UI with Tailwind CSS
-- [x] Local terminal support (node-pty)
-- [x] SSH connection manager
-- [x] xterm.js terminal emulator
-- [x] Tabbed interface with sidebar
-- [x] Connection modal for new servers
-- [x] Keyboard shortcuts
-- [ ] SFTP file transfer panel
-- [ ] Split pane support
-- [ ] Terminal color schemes/themes
-- [ ] Port forwarding (SSH tunnels)
-- [ ] Batch command execution
-- [ ] System monitoring dashboard
-- [ ] Plugin system
+| 快捷键 | 操作 |
+|--------|------|
+| `Ctrl+T` | 新建本地终端标签 |
+| `Ctrl+W` | 关闭当前标签 |
+| `Ctrl+N` | 新建 SSH 连接 |
 
 ---
 
-## Contributing
+## 开发路线图
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- [x] 项目脚手架（Electron + React + TypeScript）
+- [x] 深色主题 UI（Tailwind CSS）
+- [x] 本地终端支持（node-pty）
+- [x] SSH 连接管理器
+- [x] xterm.js 终端模拟器
+- [x] 带侧边栏的标签页界面
+- [x] 新服务器连接弹窗
+- [x] 键盘快捷键
+- [ ] SFTP 文件传输面板
+- [ ] 分屏支持
+- [ ] 终端配色方案/主题
+- [ ] 端口转发（SSH 隧道）
+- [ ] 批量命令执行
+- [ ] 系统监控仪表盘
+- [ ] 插件系统
 
 ---
 
-## License
+## 参与贡献
 
-MIT License - feel free to use this project as a starting point for your own SSH client.
+欢迎贡献！请随时提交 Pull Request。
 
 ---
 
-## Acknowledgments
+## 许可证
+
+MIT 许可证 —— 欢迎将此项目作为自己 SSH 客户端的起点。
+
+---
+
+## 致谢
 
 - [Electron](https://www.electronjs.org/)
 - [React](https://react.dev/)
