@@ -24,6 +24,8 @@ export default {
           fg: '#d4d4d4',
           cursor: '#ffffff',
           selection: '#264f78',
+          hover: '#2d2d2d',
+          dim: '#858585',
           black: '#1e1e1e',
           red: '#f44747',
           green: '#6a9955',

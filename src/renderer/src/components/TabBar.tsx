@@ -14,13 +14,7 @@ interface TabBarProps {
   onNewTab: () => void;
 }
 
-export const TabBar = ({
-  tabs,
-  activeTabId,
-  onTabClick,
-  onTabClose,
-  onNewTab,
-}: TabBarProps) => {
+export default function TabBar({ tabs, activeTabId, onTabClick, onTabClose, onNewTab }: TabBarProps) {
   return (
     <div className="flex items-center h-10 px-3 bg-terminal-black border-b border-terminal-selection">
       <div className="flex items-center flex-1 overflow-x-auto">
@@ -80,4 +74,4 @@ export const TabBar = ({
       </button>
     </div>
   );
-};
+}

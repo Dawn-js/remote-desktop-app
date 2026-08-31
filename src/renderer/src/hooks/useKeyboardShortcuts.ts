@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 interface KeyboardShortcutsOptions {
   onNewTab?: () => void;
   onCloseTab?: () => void;
-  onNewWindow?: () => void;
+  onNewConnection?: () => void;
 }
 
 export function useKeyboardShortcuts(options: KeyboardShortcutsOptions = {}) {
-  const { onNewTab, onCloseTab, onNewWindow } = options;
+  const { onNewTab, onCloseTab, onNewConnection } = options;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -26,12 +26,12 @@ export function useKeyboardShortcuts(options: KeyboardShortcutsOptions = {}) {
           break;
         case 'n':
           event.preventDefault();
-          onNewWindow?.();
+          onNewConnection?.();
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNewTab, onCloseTab, onNewWindow]);
+  }, [onNewTab, onCloseTab, onNewConnection]);
 }

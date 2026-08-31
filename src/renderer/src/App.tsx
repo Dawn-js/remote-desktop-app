@@ -1,100 +1,191 @@
-import React, { useState } from 'react';
-
-const servers = [
-  { group: 'Local', items: [{ name: 'Local Linux', id: 'local-linux' }] },
-  { group: 'Cloud', items: [{ name: 'Cloud Server', id: 'cloud-server' }] },
-  { group: 'Production', items: [{ name: 'Production DB', id: 'production-db' }] },
-];
-
-const tabs = [
-  { id: 'local-linux', label: 'Local Linux' },
-  { id: 'cloud-server', label: 'Cloud Server' },
-  { id: 'production-db', label: 'Production DB' },
-];
+import React, { useEffect, useState } from 'react';
+import Sidebar from './components/Sidebar';
+import TabBar from './components/TabBar';
+import Terminal from './components/Terminal';
+import ConnectionModal from './components/ConnectionModal';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { ServerConfig, TerminalTab } from '../../shared/types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('local-linux');
+  const [servers, setServers] = useState<ServerConfig[]>([]);
+  const [tabs, setTabs] = useState<TerminalTab[]>([
+    { id: 'local-terminal', title: 'Local Terminal', type: 'local', isActive: true, isConnected: false },
+  ]);
+  const [activeTabId, setActiveTabId] = useState<string>('local-terminal');
+  const [showConnectionModal, setShowConnectionModal] = useState(false);
 
-  const closeTab = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    const idx = tabs.findIndex(t => t.id === id);
-    if (idx > 0) setActiveTab(tabs[idx - 1].id);
+  const addLocalTerminal = () => {
+    const id = `local-${Date.now()}`;
+    const newTab: TerminalTab = {
+      id,
+      title: `Local Terminal ${tabs.filter((t) => t.type === 'local').length + 1}`,
+      type: 'local',
+      isActive: true,
+      isConnected: false,
+    };
+    setTabs((prev) => {
+      const updated = prev.map((t) => ({ ...t, isActive: false }));
+      return [...updated, newTab];
+    });
+    setActiveTabId(id);
   };
+
+  const openServer = async (server: ServerConfig) => {
+    const sessionId = `ssh-${server.id}-${Date.now()}`;
+    const newTab: TerminalTab = {
+      id: sessionId,
+      title: server.name,
+      type: 'ssh',
+      serverId: server.id,
+      serverName: server.name,
+      isActive: true,
+      isConnected: false,
+    };
+    setTabs((prev) => {
+      const updated = prev.map((t) => ({ ...t, isActive: false }));
+      return [...updated, newTab];
+    });
+    setActiveTabId(sessionId);
+
+    try {
+      const result = await window.electronAPI.server.getWithCredentials(server.id);
+      if (!result) return;
+
+      const sshResult = await window.electronAPI.ssh.createSession({
+        sessionId,
+        serverId: server.id,
+        cols: 80,
+        rows: 24,
+      });
+
+      if (sshResult.success) {
+        setTabs((prev) =>
+          prev.map((t) => (t.id === sessionId ? { ...t, isConnected: true } : t))
+        );
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const closeTab = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setTabs((prev) => {
+      const filtered = prev.filter((t) => t.id !== id);
+      if (filtered.length === 0) {
+        setActiveTabId('local-terminal');
+        return [{ id: 'local-terminal', title: 'Local Terminal', type: 'local', isActive: true, isConnected: false }];
+      }
+      const idx = prev.findIndex((t) => t.id === id);
+      const nextActive = filtered[idx - 1] || filtered[0];
+      nextActive.isActive = true;
+      setActiveTabId(nextActive.id);
+      return filtered;
+    });
+    window.electronAPI.ssh.closeSession(id);
+  };
+
+  const closeActiveTab = () => {
+    if (activeTabId && activeTabId !== 'local-terminal') {
+      setTabs((prev) => {
+        const filtered = prev.filter((t) => t.id !== activeTabId);
+        if (filtered.length === 0) {
+          setActiveTabId('local-terminal');
+          return [{ id: 'local-terminal', title: 'Local Terminal', type: 'local', isActive: true, isConnected: false }];
+        }
+        const idx = prev.findIndex((t) => t.id === activeTabId);
+        const nextActive = filtered[idx - 1] || filtered[0];
+        nextActive.isActive = true;
+        setActiveTabId(nextActive.id);
+        return filtered;
+      });
+      window.electronAPI.ssh.closeSession(activeTabId);
+    }
+  };
+
+  const handleConnection = async (server: {
+    name: string;
+    host: string;
+    port: number;
+    username: string;
+    authMethod: 'password' | 'key';
+    password?: string;
+    privateKeyPath?: string;
+    group: string;
+  }) => {
+    try {
+      const newServer = await window.electronAPI.server.add({
+        ...server,
+        keepAlive: true,
+        keepAliveInterval: 10000,
+      });
+      setServers((prev) => [...prev, newServer]);
+      setShowConnectionModal(false);
+      openServer(newServer);
+    } catch {
+      // ignore
+    }
+  };
+
+  useKeyboardShortcuts({
+    onNewTab: addLocalTerminal,
+    onCloseTab: closeActiveTab,
+    onNewConnection: () => setShowConnectionModal(true),
+  });
+
+  useEffect(() => {
+    window.electronAPI.config.get().then((config) => {
+      if (config?.servers?.length) {
+        setServers(config.servers);
+      }
+    });
+  }, []);
+
+  const activeTab = tabs.find((t) => t.id === activeTabId);
 
   return (
     <div className="flex h-full w-full bg-terminal-bg text-terminal-fg">
-      <aside className="w-[260px] flex-shrink-0 bg-terminal-black border-r border-terminal-selection flex flex-col">
-        <div className="px-4 py-3 border-b border-terminal-selection">
-          <h1 className="text-lg font-semibold text-terminal-fg">SSH Client</h1>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-4">
-          {servers.map((section) => (
-            <div key={section.group}>
-              <h2 className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-terminal-brightBlack">
-                {section.group}
-              </h2>
-              <ul className="space-y-1">
-                {section.items.map((server) => (
-                  <li key={server.id}>
-                    <button
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-terminal-fg transition-colors ${
-                        activeTab === server.id
-                          ? 'bg-terminal-selection'
-                          : 'hover:bg-terminal-selection'
-                      }`}
-                      onClick={() => setActiveTab(server.id)}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-green-500" />
-                      <span>{server.name}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
-      </aside>
+      <Sidebar
+        servers={servers}
+        groups={['Local', 'Cloud', 'Production', 'Development']}
+        activeTabId={activeTabId}
+        onServerClick={openServer}
+      />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex items-center h-10 px-3 bg-terminal-black border-b border-terminal-selection">
-          <div className="flex-1 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'text-primary-400 bg-terminal-selection'
-                    : 'text-terminal-brightBlack hover:text-terminal-fg hover:bg-terminal-black'
-                }`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-                <button
-                  className="ml-1 p-0.5 rounded hover:bg-terminal-brightBlack/20 transition-colors"
-                  onClick={(e) => closeTab(e, tab.id)}
-                  aria-label={`Close ${tab.label}`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </button>
-            ))}
-            <button
-              className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg text-terminal-brightBlack hover:text-terminal-fg hover:bg-terminal-black transition-colors"
-              aria-label="New tab"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <TabBar
+          tabs={tabs.map((t) => ({ id: t.id, label: t.title }))}
+          activeTabId={activeTabId}
+          onTabClick={setActiveTabId}
+          onTabClose={closeTab}
+          onNewTab={addLocalTerminal}
+        />
 
-        <div className="flex-1 flex items-center justify-center bg-terminal-bg">
-          <div className="text-terminal-brightBlack text-sm">Terminal will appear here</div>
+        <div className="flex-1 relative bg-terminal-bg">
+          {tabs.map((tab) => (
+            <div
+              key={tab.id}
+              className={`absolute inset-0 ${tab.id === activeTabId ? 'block' : 'hidden'}`}
+            >
+              {tab.isConnected || tab.type === 'local' ? (
+                <Terminal
+                  sessionId={tab.id}
+                  type={tab.type}
+                  serverId={tab.serverId}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-terminal-dim text-sm">
+                  Connecting to {tab.title}...
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </main>
+
+      {showConnectionModal && (
+        <ConnectionModal onClose={() => setShowConnectionModal(false)} onConnect={handleConnection} />
+      )}
     </div>
   );
 }

@@ -4,10 +4,12 @@ import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 
 interface TerminalProps {
-  onData?: (data: string) => void;
+  sessionId: string;
+  type: 'ssh' | 'local';
+  serverId?: string;
 }
 
-export const Terminal = ({ onData }: TerminalProps) => {
+export default function Terminal({ sessionId, type, serverId }: TerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTermTerminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -18,13 +20,12 @@ export const Terminal = ({ onData }: TerminalProps) => {
     const xterm = new XTermTerminal({
       cursorBlink: true,
       fontSize: 14,
-      fontFamily: 'Monospace',
+      fontFamily: 'Fira Code, monospace',
       theme: {
         background: '#1e1e1e',
         foreground: '#d4d4d4',
         cursor: '#ffffff',
-        selection: '#264f78',
-      },
+      } as any,
     });
 
     const fitAddon = new FitAddon();
@@ -34,11 +35,36 @@ export const Terminal = ({ onData }: TerminalProps) => {
     fitAddon.fit();
 
     xterm.onData((data) => {
-      onData?.(data);
+      if (type === 'ssh') {
+        window.electronAPI.ssh.sendInput(sessionId, data);
+      } else {
+        window.electronAPI.local.sendInput(sessionId, data);
+      }
     });
 
     xtermRef.current = xterm;
     fitAddonRef.current = fitAddon;
+
+    const unsubscribeOutput = (type === 'ssh'
+      ? window.electronAPI.ssh.onOutput
+      : window.electronAPI.local.onOutput
+    )((data) => {
+      xterm.write(data.data);
+    });
+
+    const unsubscribeExit = (type === 'ssh'
+      ? window.electronAPI.ssh.onExit
+      : window.electronAPI.local.onExit
+    )(() => {
+      xterm.write('\r\n\x1b[31mSession ended\x1b[0m\r\n');
+    });
+
+    const unsubscribeError = (type === 'ssh'
+      ? window.electronAPI.ssh.onError
+      : window.electronAPI.local.onError
+    )((data) => {
+      xterm.write(`\r\n\x1b[31mError: ${data.error}\x1b[0m\r\n`);
+    });
 
     const handleResize = () => {
       fitAddon.fit();
@@ -46,40 +72,22 @@ export const Terminal = ({ onData }: TerminalProps) => {
 
     window.addEventListener('resize', handleResize);
 
-    const handleSshOutput = (event: CustomEvent<string>) => {
-      xterm.write(event.detail);
-    };
-
-    const handleLocalOutput = (event: CustomEvent<string>) => {
-      xterm.write(event.detail);
-    };
-
-    window.addEventListener('ssh.onOutput', handleSshOutput as EventListener);
-    window.addEventListener('local.onOutput', handleLocalOutput as EventListener);
-
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('ssh.onOutput', handleSshOutput as EventListener);
-      window.removeEventListener('local.onOutput', handleLocalOutput as EventListener);
+      unsubscribeOutput();
+      unsubscribeExit();
+      unsubscribeError();
       xterm.dispose();
       xtermRef.current = null;
       fitAddonRef.current = null;
     };
-  }, [onData]);
+  }, [sessionId, type]);
 
   useEffect(() => {
     if (fitAddonRef.current) {
       fitAddonRef.current.fit();
     }
   });
-
-  const write = (data: string) => {
-    xtermRef.current?.write(data);
-  };
-
-  const clear = () => {
-    xtermRef.current?.clear();
-  };
 
   return (
     <div
@@ -88,4 +96,4 @@ export const Terminal = ({ onData }: TerminalProps) => {
       style={{ minHeight: '100%' }}
     />
   );
-};
+}
