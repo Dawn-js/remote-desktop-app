@@ -1,4 +1,4 @@
-# 远程桌面 SSH 客户端
+# 星桥 SSH 客户端
 
 一款基于 Electron、React、TypeScript 和 Tailwind CSS 构建的现代化跨平台 SSH 客户端。通过美观的标签页界面管理本地及远程 Linux 系统，并内置文件传输功能。
 
