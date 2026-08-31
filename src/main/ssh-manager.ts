@@ -2,6 +2,7 @@ import { Client, ConnectConfig } from 'ssh2';
 import { ipcMain, WebContents } from 'electron';
 import { v4 as uuidv4 } from 'uuid';
 import { ServerConfig } from '../shared/types';
+import { ConfigManager } from './config-manager';
 
 interface SSHSession {
   client: Client;
@@ -147,7 +148,6 @@ export class SSHManager {
   }
 
   private async getServerWithCredentials(serverId: string): Promise<ServerConfig | null> {
-    const { ConfigManager } = await import('./config-manager');
     const configManager = new ConfigManager(this.getConfigPath());
     return configManager.getServerWithCredentials(serverId);
   }

@@ -1,17 +1,19 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { SSHManager } from './ssh-manager';
 import { TerminalManager } from './terminal-manager';
 import { ConfigManager } from './config-manager';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow: BrowserWindow | null = null;
 let sshManager: SSHManager | null = null;
 let terminalManager: TerminalManager | null = null;
 let configManager: ConfigManager | null = null;
+
+function getConfigPath(): string {
+  return path.join(app.getPath('userData'), 'config.json');
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -63,34 +65,30 @@ function initializeManagers(webContents: Electron.WebContents): void {
   setupAppIPCHandlers();
 }
 
-function getConfigPath(): string {
-  return path.join(app.getPath('userData'), 'config.json');
-}
-
 function setupConfigIPCHandlers(): void {
   ipcMain.handle('config:get', () => {
     return configManager?.getConfig();
   });
 
-  ipcMain.handle('config:save', (_event, config: Partial<AppConfig>) => {
+  ipcMain.handle('config:save', (_event, config) => {
     return configManager?.saveConfig(config);
   });
 }
 
 function setupServerIPCHandlers(): void {
-  ipcMain.handle('server:add', async (_event, server: Omit<ServerConfig, 'id' | 'createdAt' | 'updatedAt'>) => {
+  ipcMain.handle('server:add', async (_event, server) => {
     return configManager?.addServer(server);
   });
 
-  ipcMain.handle('server:update', async (_event, id: string, updates: Partial<ServerConfig>) => {
+  ipcMain.handle('server:update', async (_event, id, updates) => {
     return configManager?.updateServer(id, updates);
   });
 
-  ipcMain.handle('server:delete', async (_event, id: string) => {
+  ipcMain.handle('server:delete', async (_event, id) => {
     return configManager?.deleteServer(id);
   });
 
-  ipcMain.handle('server:get-with-credentials', async (_event, id: string) => {
+  ipcMain.handle('server:get-with-credentials', async (_event, id) => {
     return configManager?.getServerWithCredentials(id);
   });
 }

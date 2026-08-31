@@ -12,6 +12,7 @@
     "build:renderer": "tsc -p tsconfig.renderer.json && vite build",
     "preview": "vite preview",
     "start": "electron .",
+    "package": "npm run build && electron-builder",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
